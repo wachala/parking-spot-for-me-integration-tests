@@ -1,0 +1,16 @@
+version: '3.2'
+
+services:
+  configurationservice:
+    image: patrykks/iosr-configuration-service
+    ports:
+      - "7777"
+
+  eureka:
+    image: patrykks/iosr-discovery-service
+    ports:
+      - "8761"
+    depends_on:
+      - configurationservice
+    environment:
+      CONFIGURATION_SERVICE_URL: http://configurationservice:7777

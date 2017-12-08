@@ -1,0 +1,21 @@
+sudo: required
+
+services:
+  - docker
+
+before_install:
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
+
+script:
+  - mvn clean test
+
+after_failure:
+  - cat ./build/dockerLogs/dockerCompositionTest/eureka.log
+  - cat ./build/dockerLogs/dockerCompositionTest/configurationservice.log
+
+env:
+  - DOCKER_COMPOSE_VERSION=1.13.0
+
