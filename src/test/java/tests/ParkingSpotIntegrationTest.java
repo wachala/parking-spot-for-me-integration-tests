@@ -13,31 +13,36 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @Category(IntegrationTest.class)
-public class EurekaIntegrationTest {
+public class ParkingSpotIntegrationTest {
+    private static final String PARKING_LOT_SERVICE_NAME = "parkinglotservice";
+    private static final int PARKING_LOT_SERVICE_PORT = 5555;
+
     private static final String EUREKA_SERVICE_NAME = "eureka";
     private static final int EUREKA_SERVICE_PORT = 8761;
     private static String eurekaEndpoint;
 
     @ClassRule
-    public static DockerComposeRule docker = DockerComposeRule.builder()
-            .file("compositions/eureka-integration-test-compose.yml")
+    public static DockerComposeRule parkingSpotDockerComposition = DockerComposeRule.builder()
+            .file("compositions/parking-lot-intagration-test-compose.yml")
 //            .saveLogsTo("build/dockerLogs/dockerCompositionTest")
             .projectName(ProjectName.random())
-            .waitingForService(EUREKA_SERVICE_NAME, HealthChecks.toRespondOverHttp(EUREKA_SERVICE_PORT, (p) -> p.inFormat("http://$HOST:$EXTERNAL_PORT")))
+            .waitingForService(
+                    PARKING_LOT_SERVICE_NAME, HealthChecks.toRespondOverHttp(
+                            PARKING_LOT_SERVICE_PORT, (p) -> p.inFormat("http://$HOST:$EXTERNAL_PORT/parking-lot-service/api/parking-lot")))
             .build();
 
     @BeforeClass
     public static void initialize() {
-        DockerPort eureka = docker.containers()
+        DockerPort eurekaPort = parkingSpotDockerComposition.containers()
                 .container(EUREKA_SERVICE_NAME)
                 .port(EUREKA_SERVICE_PORT);
 
-        eurekaEndpoint = String.format("http://%s:%s", eureka.getIp(), eureka.getExternalPort());
+        eurekaEndpoint = String.format("http://%s:%s/eureka/apps/PARKING-LOT-SERVICE", eurekaPort.getIp(), eurekaPort.getExternalPort());
     }
 
     @Test
-    public void checkEurekaHealthEndpoint() throws Exception {
-        HttpResponse<String> response = Unirest.get(eurekaEndpoint + "/health").asString();
+    public void checkParkingLotServiceIsRegistedInEureka() throws Exception {
+        HttpResponse<String> response = Unirest.get(eurekaEndpoint).asString();
 
         System.out.println(response.getBody());
         System.out.println(response.getStatus());
