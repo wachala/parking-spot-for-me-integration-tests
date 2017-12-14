@@ -44,7 +44,7 @@ public class ParkingSpotRestServiceIntegrationTest {
         System.out.println(response.getBody());
         System.out.println(response.getStatus());
 
-        Assert.assertEquals("[]", response.getBody());
+        Assert.assertEquals(200, response.getStatus());
     }
 
 }
